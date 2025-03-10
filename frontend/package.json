@@ -26,6 +26,7 @@
   },
   "devDependencies": {
     "eslint": "^8.55.0",
-    "eslint-config-next": "14.0.4"
+    "eslint-config-next": "14.0.4",
+    "@types/axios": "^0.14.0"
   }
 } 

@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import axios from 'axios';
+import { create, StateCreator } from 'zustand';
+import axios, { AxiosError } from 'axios';
 
 // Types
 export interface User {
@@ -65,7 +65,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
   
-  login: async (email, password) => {
+  login: async (email: string, password: string) => {
     try {
       const response = await axios.post('/api/auth/login', { email, password });
       const { access_token } = response.data;
@@ -85,7 +85,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
   
-  register: async (email, password) => {
+  register: async (email: string, password: string) => {
     try {
       await axios.post('/api/auth/register', { email, password });
       // After registration, log in
@@ -137,8 +137,9 @@ export const useContactsStore = create<ContactsState>((set, get) => ({
       if (get().searchTerm) {
         queryParams.append('search', get().searchTerm);
       }
-      if (get().selectedGroup) {
-        queryParams.append('group', get().selectedGroup);
+      const selectedGroup = get().selectedGroup;
+      if (selectedGroup !== null) {
+        queryParams.append('group', selectedGroup);
       }
       
       const response = await axios.get(`/api/contacts?${queryParams.toString()}`, {
@@ -158,17 +159,17 @@ export const useContactsStore = create<ContactsState>((set, get) => ({
     }
   },
   
-  searchContacts: (term) => {
+  searchContacts: (term: string) => {
     set({ searchTerm: term });
     get().fetchContacts();
   },
   
-  filterByGroup: (groupName) => {
+  filterByGroup: (groupName: string | null) => {
     set({ selectedGroup: groupName });
     get().fetchContacts();
   },
   
-  addContact: async (contactData) => {
+  addContact: async (contactData: Partial<Contact>) => {
     try {
       const token = localStorage.getItem('token');
       
@@ -188,7 +189,7 @@ export const useContactsStore = create<ContactsState>((set, get) => ({
     }
   },
   
-  updateContact: async (id, contactData) => {
+  updateContact: async (id: number, contactData: Partial<Contact>) => {
     try {
       const token = localStorage.getItem('token');
       
@@ -208,7 +209,7 @@ export const useContactsStore = create<ContactsState>((set, get) => ({
     }
   },
   
-  deleteContact: async (id) => {
+  deleteContact: async (id: number) => {
     try {
       const token = localStorage.getItem('token');
       
