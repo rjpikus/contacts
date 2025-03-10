@@ -2,11 +2,13 @@ services:
   - type: web
     name: contacts-frontend
     env: node
-    buildCommand: cd frontend && npm install --production=false && npm run build
+    buildCommand: cd frontend && npm install && npm run build
     startCommand: cd frontend && npm start
     envVars:
       - key: NODE_ENV
         value: production
+      - key: NODE_VERSION
+        value: 18.17.0
       - key: NEXT_PUBLIC_API_URL
         fromService:
           name: contacts-backend
