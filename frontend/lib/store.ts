@@ -87,10 +87,18 @@ export const useAuthStore = create<AuthState>((set) => ({
   
   register: async (email: string, password: string) => {
     try {
-      await axios.post('/api/auth/register', { email, password });
+      const response = await axios.post('/api/auth/register', { email, password });
+      console.log('Registration response:', response.data);
       // After registration, log in
       await useAuthStore.getState().login(email, password);
     } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error('Registration error:', {
+          status: error.response?.status,
+          data: error.response?.data,
+          message: error.message
+        });
+      }
       throw error;
     }
   },
