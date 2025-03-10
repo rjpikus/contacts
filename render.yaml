@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: contacts-frontend
+    env: node
+    buildCommand: cd frontend && npm install && npm run build
+    startCommand: cd frontend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          name: contacts-backend
+          type: web
+          property: host
+
+  - type: web
+    name: contacts-backend
+    env: python
+    buildCommand: cd backend && pip install -r requirements.txt
+    startCommand: cd backend && gunicorn app:app
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: contacts-db
+          property: connectionString
+
+databases:
+  - name: contacts-db
+    databaseName: contacts_db
+    user: contacts_user 

@@ -1,0 +1,15 @@
+---
+description: This is the projects tech stack
+globs: 
+alwaysApply: false
+---
+
+# Technical stack
+
+- Python for the backend
+- Next.js for the frontend
+- SQL databases, never JSON file storage
+- Seperate databases for dev, test, and prod
+- If using elastic search, using elastic.co hosting
+- Elastic.co will have dev and prod indexes
+- Python tests

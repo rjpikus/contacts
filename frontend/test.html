@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Management API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        h2 {
+            margin-top: 0;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #0072ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #response {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Contact Management API Test</h1>
+    
+    <div class="container">
+        <h2>Register</h2>
+        <input type="email" id="registerEmail" placeholder="Email">
+        <input type="password" id="registerPassword" placeholder="Password">
+        <button onclick="register()">Register</button>
+    </div>
+    
+    <div class="container">
+        <h2>Login</h2>
+        <input type="email" id="loginEmail" placeholder="Email">
+        <input type="password" id="loginPassword" placeholder="Password">
+        <button onclick="login()">Login</button>
+    </div>
+    
+    <div class="container">
+        <h2>Create Contact</h2>
+        <input type="text" id="firstName" placeholder="First Name">
+        <input type="text" id="lastName" placeholder="Last Name">
+        <input type="email" id="contactEmail" placeholder="Email">
+        <input type="text" id="phone" placeholder="Phone">
+        <textarea id="address" placeholder="Address"></textarea>
+        <textarea id="notes" placeholder="Notes"></textarea>
+        <button onclick="createContact()">Create Contact</button>
+    </div>
+    
+    <div class="container">
+        <h2>Get Contacts</h2>
+        <button onclick="getContacts()">Get All Contacts</button>
+    </div>
+    
+    <div id="response"></div>
+    
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        let token = localStorage.getItem('token');
+        
+        function updateResponse(text) {
+            document.getElementById('response').textContent = typeof text === 'object' 
+                ? JSON.stringify(text, null, 2) 
+                : text;
+        }
+        
+        async function makeRequest(url, method, data) {
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}${url}`, {
+                    method,
+                    headers,
+                    body: data ? JSON.stringify(data) : undefined
+                });
+                
+                const responseData = await response.json();
+                updateResponse(responseData);
+                return responseData;
+            } catch (error) {
+                updateResponse(`Error: ${error.message}`);
+                console.error('Request error:', error);
+            }
+        }
+        
+        async function register() {
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            
+            if (!email || !password) {
+                updateResponse('Please enter both email and password');
+                return;
+            }
+            
+            await makeRequest('/auth/register', 'POST', { email, password });
+        }
+        
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                updateResponse('Please enter both email and password');
+                return;
+            }
+            
+            const response = await makeRequest('/auth/login', 'POST', { email, password });
+            
+            if (response && response.access_token) {
+                token = response.access_token;
+                localStorage.setItem('token', token);
+                updateResponse(`Login successful! Token: ${token}`);
+            }
+        }
+        
+        async function createContact() {
+            if (!token) {
+                updateResponse('Please login first to get a token');
+                return;
+            }
+            
+            const firstName = document.getElementById('firstName').value;
+            
+            if (!firstName) {
+                updateResponse('First name is required');
+                return;
+            }
+            
+            const contactData = {
+                first_name: firstName,
+                last_name: document.getElementById('lastName').value,
+                email: document.getElementById('contactEmail').value,
+                phone: document.getElementById('phone').value,
+                address: document.getElementById('address').value,
+                notes: document.getElementById('notes').value
+            };
+            
+            await makeRequest('/contacts', 'POST', contactData);
+        }
+        
+        async function getContacts() {
+            if (!token) {
+                updateResponse('Please login first to get a token');
+                return;
+            }
+            
+            await makeRequest('/contacts', 'GET');
+        }
+    </script>
+</body>
+</html> 
